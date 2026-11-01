@@ -1,0 +1,3 @@
+/* Tailwind v4 scans the project root only; the dashboards live outside it. */
+@import "@vps/index.css";
+@source "/home/shaw/scripts/agent-orchestra/dashboard/src";

@@ -6,10 +6,12 @@ import { Canvas } from './Canvas';
 type Mode = 'boxes' | 'parity';
 
 export default function App() {
-  const [q, setQ] = useState('');
-  const [mode, setMode] = useState<Mode>('boxes');
-  const [width, setWidth] = useState<Width>('auto');
-  const [src, setSrc] = useState<'all' | Source>('all');
+  // ?q=&mode=&width=&src= seed the view, so a filmed URL names what it shows.
+  const url = new URLSearchParams(location.search);
+  const [q, setQ] = useState(url.get('q') || '');
+  const [mode, setMode] = useState<Mode>((url.get('mode') as Mode) || 'boxes');
+  const [width, setWidth] = useState<Width>((url.get('width') as Width) || 'auto');
+  const [src, setSrc] = useState<'all' | Source>((url.get('src') as Source) || 'all');
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
   const toggleDark = () => { document.documentElement.classList.toggle('dark'); setDark(document.documentElement.classList.contains('dark')); };
 

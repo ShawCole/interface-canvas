@@ -2,8 +2,8 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import '@vps/index.css';
-import '@paul/index.css';
+import './tw-vps.css';
+import './tw-paul.css';
 import './canvas.css';
 import App from './App';
 
