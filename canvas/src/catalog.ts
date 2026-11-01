@@ -30,6 +30,10 @@ declare const __CANVAS_PAUL__: string;
 /** The component a module exports: default, then the export named like the file, then the first function export. */
 export function pick(mod: Record<string, unknown>, name: string): React.ComponentType<any> | null {
   const cands = [mod.default, mod[name], ...Object.values(mod)];
-  for (const c of cands) if (typeof c === 'function' && /^[A-Z]/.test((c as { name?: string }).name || 'X')) return c as React.ComponentType<any>;
+  for (const c of cands) {
+    if (typeof c === 'function' && /^[A-Z]/.test((c as { name?: string }).name || 'X')) return c as React.ComponentType<any>;
+    // forwardRef / memo components are objects with $$typeof and a render function.
+    if (c && typeof c === 'object' && '$$typeof' in (c as object)) return c as React.ComponentType<any>;
+  }
   return null;
 }

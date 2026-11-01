@@ -6,6 +6,8 @@ import './tw-vps.css';
 import './tw-paul.css';
 import './canvas.css';
 import App from './App';
+import { ThemeProvider as VpsTheme } from '@vps/theme/ThemeProvider';
+import { ThemeProvider as PaulTheme } from '@paul/theme/ThemeProvider';
 
 // Nothing on the canvas talks to a live box. Every /api call answers an empty 200 so a component
 // shows its empty state instead of a network error; a component that needs rows gets them from
@@ -26,7 +28,7 @@ const qc = new QueryClient({ defaultOptions: { queries: { retry: false, staleTim
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={qc}>
-      <MemoryRouter><App /></MemoryRouter>
+      <VpsTheme><PaulTheme><MemoryRouter><App /></MemoryRouter></PaulTheme></VpsTheme>
     </QueryClientProvider>
   </StrictMode>
 );
