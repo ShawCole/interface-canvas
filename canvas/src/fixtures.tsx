@@ -38,6 +38,7 @@ const AGENT_TREE: Fixture[] = [
 const subItems = [{ kind: 'text', role: 'user', text: 'Run the test suite and report.', ts: now(), uuid: 's1' }, { kind: 'tool_use', role: 'assistant', id: 'tu1', tool: 'Bash', input: { command: 'npm test' }, ts: now(), uuid: 's2' }, { kind: 'text', role: 'assistant', text: 'Running the suite now.', ts: now(), uuid: 's3' }];
 export const FIXTURES: Record<string, Fixture[]> = {
   'vps/agent/AgentTree': AGENT_TREE,
+  'paul/agent/AgentTree': AGENT_TREE,
   'vps/chat/TranscriptChatView': [
     { label: 'seat', props: { agentId: 'pm-shoreline', state: 'idle', fixtureItems: [{ kind: 'text', role: 'user', text: 'How did the release go?', ts: now(), uuid: 'u1' }, { kind: 'text', role: 'assistant', text: 'Clean. 953 tests, lint at baseline.', ts: now(), uuid: 'a1' }] } },
     { label: 'subagent, read-only', props: { agentId: 'pm-shoreline', state: 'working', subagentId: 'a00000000000000f3', subagentBanner: { text: 'Viewing Run the test suite (helper of Review the branch), read-only.', backLabel: 'Back to pm-shoreline', onBack: noop }, pendingMenu: menu, fixtureItems: subItems } },
@@ -119,6 +120,7 @@ export const NOT_A_CARD: Record<string, string> = {
   AuthFlow: 'live only: drives the real sign-in flow over /api',
   'paul/kit/CardChip': 'live only: loads its card from /api',
   'paul/ConversationPanel': 'live only: reads the two agents\' mail from /api',
+  'paul/chat/SubagentTranscriptView': 'live only: streams one subagent\'s transcript from /api (read-only drill-in)',
 };
 export function fixturesFor(source: string, rel: string, name: string): Fixture[] {
   const key = `${source}/${rel.replace(/\.tsx$/, '')}`;
