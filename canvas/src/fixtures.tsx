@@ -2,6 +2,11 @@
 // by `vps/folder/Name` / `paul/folder/Name` when the two boxes differ. A component with no fixture
 // mounts with {} inside an error boundary: a red card means "needs a fixture" and names the prop.
 import { FileText, Phone } from 'lucide-react';
+import treeIdle from '@vps/lib/fixtures/agent-tree/idle-seat.json';
+import treeOne from '@vps/lib/fixtures/agent-tree/one-running.json';
+import treeFrozen from '@vps/lib/fixtures/agent-tree/frozen-parent.json';
+import treeMixed from '@vps/lib/fixtures/agent-tree/mixed.json';
+import treeDepth3 from '@vps/lib/fixtures/agent-tree/depth3.json';
 export interface Fixture { label: string; props: Record<string, unknown>; /** A named export to mount instead of the file's default (a file of several components). */ export?: string }
 const noop = () => {};
 const now = () => new Date().toISOString();
@@ -11,7 +16,33 @@ const calls = [{ id: 't1', name: 'Bash', status: 'done', chip: 'npm test', resul
 const menu = { kind: 'options', question: 'Deploy the call experience to Paul\'s box?', options: [{ n: '1', label: 'Yes, deploy now' }, { n: '2', label: 'Not yet' }, { n: '3', label: 'Deploy to staging first' }], captured_at: Date.now() / 1000 };
 const decision = { id: 'apr_demo', from_agent: 'pm-shoreline', kind: 'approval', state: 'pending', question: 'Deploy the call experience to Paul\'s box?', summary: 'Decide by 2026-11-02 12:00 ET. Dashboard only, no restarts, rollback branch kept.', options: ['Approve', 'Deny'], menu: null, risk_level: 'low', reversibility: 'reversible', answer: null, answer_text: null, option_n: null, answered_by: null, created_at: now(), updated_at: now() };
 const approval = { id: 'apr_demo', kind: 'approval', type: 'agent', urgency: 'normal', status: 'pending', title: 'Deploy the call experience', description: 'Dashboard only, no restarts. Backup branch kept with a rollback README.', risk_level: 'low', evidence_summary: '953 tests pass, lint at baseline.', qa_verdict: 'pass', sandbox_result: { passed: true, total: 953 }, onepager_url: null, created_at: now(), updated_at: now(), source: 'pm-shoreline', from_agent: 'pm-shoreline', question: 'Deploy the call experience to Paul\'s box?', summary: 'Dashboard only, no restarts.', options: ['Approve', 'Deny'], menu: null, state: 'pending' };
+// Agent tree: the five scrubbed agent_tree.py captures; `now` pinned just after each tree's last write.
+interface TreeJson { agent_id: string; last_activity_at: string | null; children: TreeJson[] }
+const treeNow = (t: TreeJson) => {
+  const all: number[] = [];
+  const walk = (n: TreeJson) => { all.push(Date.parse(n.last_activity_at || '') || 0); n.children.forEach(walk); };
+  walk(t);
+  return Math.max(...all) + 4000;
+};
+const treeFix = (label: string, json: unknown, extra: Record<string, unknown> = {}): Fixture => {
+  const tree = json as TreeJson;
+  return { label, props: { tree, now: treeNow(tree), selected: tree.agent_id, onSelect: noop, ...extra } };
+};
+const AGENT_TREE: Fixture[] = [
+  treeFix('idle seat (renders nothing)', treeIdle),
+  treeFix('one running', treeOne),
+  treeFix('frozen parent: waiting on helper', treeFrozen),
+  treeFix('mixed + show finished', treeMixed, { supportsAll: true, showFinished: true, onShowFinished: noop }),
+  treeFix('depth 3', treeDepth3),
+];
+const subItems = [{ kind: 'text', role: 'user', text: 'Run the test suite and report.', ts: now(), uuid: 's1' }, { kind: 'tool_use', role: 'assistant', id: 'tu1', tool: 'Bash', input: { command: 'npm test' }, ts: now(), uuid: 's2' }, { kind: 'text', role: 'assistant', text: 'Running the suite now.', ts: now(), uuid: 's3' }];
 export const FIXTURES: Record<string, Fixture[]> = {
+  'vps/agent/AgentTree': AGENT_TREE,
+  'paul/agent/AgentTree': AGENT_TREE,
+  'vps/chat/TranscriptChatView': [
+    { label: 'seat', props: { agentId: 'pm-shoreline', state: 'idle', fixtureItems: [{ kind: 'text', role: 'user', text: 'How did the release go?', ts: now(), uuid: 'u1' }, { kind: 'text', role: 'assistant', text: 'Clean. 953 tests, lint at baseline.', ts: now(), uuid: 'a1' }] } },
+    { label: 'subagent, read-only', props: { agentId: 'pm-shoreline', state: 'working', subagentId: 'a00000000000000f3', subagentBanner: { text: 'Viewing Run the test suite (helper of Review the branch), read-only.', backLabel: 'Back to pm-shoreline', onBack: noop }, pendingMenu: menu, fixtureItems: subItems } },
+  ],
   StatusDot: [{ label: 'online', props: { status: 'online' } }, { label: 'working', props: { status: 'working' } }, { label: 'stalled', props: { status: 'stalled' } }, { label: 'offline', props: { status: 'offline' } }],
   AgentStatusDot: [{ label: 'working', props: { status: 'working' } }, { label: 'idle', props: { status: 'idle' } }, { label: 'stalled', props: { status: 'stalled' } }, { label: 'stranded', props: { status: 'stranded' } }],
   TierBadge: [{ label: 'T0', props: { tier: 'T0' } }, { label: 'T1', props: { tier: 'T1' } }, { label: 'T2', props: { tier: 'T2' } }],
@@ -89,6 +120,7 @@ export const NOT_A_CARD: Record<string, string> = {
   AuthFlow: 'live only: drives the real sign-in flow over /api',
   'paul/kit/CardChip': 'live only: loads its card from /api',
   'paul/ConversationPanel': 'live only: reads the two agents\' mail from /api',
+  'paul/chat/SubagentTranscriptView': 'live only: streams one subagent\'s transcript from /api (read-only drill-in)',
 };
 export function fixturesFor(source: string, rel: string, name: string): Fixture[] {
   const key = `${source}/${rel.replace(/\.tsx$/, '')}`;
